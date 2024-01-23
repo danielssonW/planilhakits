@@ -75,7 +75,6 @@ Sub ClearFormat()
     PlanilhaPrincipal.Range("A3:N1000").ClearFormats
     PlanilhaPrincipal.Range("A3:N1000").Value = ""
 End Sub
-
 Sub Main()
     Call DeclararVariaveis
     Call ConectarSAP
@@ -166,7 +165,6 @@ Sub RemoverBacklog()
             End With
         End If
     Next Row
-
 End Sub
 
 Sub InserirPEPConsulta(NumeroPEP)
@@ -294,14 +292,14 @@ Function StatusComponentes()
         If ValorTexto = "FAZER PROGRAMA CNC" Then
             If InStr(ValorStatus, StatusConferido) = 0 Then
                 CNCfeito = False
-                StatusComponentes = xlThemeColorAccent5
+                StatusComponentes = xlThemeColorAccent5 'azul
             End If
         End If
         
         If CNCfeito = True Then
             If InStr(ValorTexto, "CORTAR") > 0 Then
-                If InStr(ValorStatus, StatusConferido) = 0 Then '
-                    StatusComponentes = xlThemeColorAccent4
+                If InStr(ValorStatus, StatusConferido) = 0 Then
+                    StatusComponentes = xlThemeColorAccent4 'amarelo
                 End If
             End If
         End If
@@ -386,3 +384,39 @@ Sub PreencherPEPBacklog()
     PlanilhaComando.Cells(ProximaLinhaDeBaixo, ColunaBackLog).PasteSpecial Paste:=xlPasteFormats
     PlanilhaComando.Cells(ProximaLinhaDeBaixo, ColunaBackLog).PasteSpecial Paste:=xlPasteValues
 End Sub
+
+Sub AtualizarCalendario()
+    Call DeclararVariaveis
+    Call ConectarSAP
+    For ColunaData = 2 To 14
+        TotalLinhasPEP = PlanilhaComando.Cells(Rows.Count, ColunaData).End(xlUp).Row
+        
+        For LinhaPEP = 3 To TotalLinhasPEP
+            CelulaPEP = PlanilhaComando.Cells(LinhaPEP, ColunaData)
+            PEP = PlanilhaComando.Cells(LinhaPEP, ColunaData).Value
+            
+            ' TODO: SE FOR COR BRANCA DA ERRO
+            If PlanilhaComando.Cells(LinhaPEP, ColunaData).Interior.ThemeColor <> xlThemeColorAccent6 Then
+               
+                EntrarCOOIS
+                AcessarPEP PEP
+                
+                 If ExisteConsulta() Then
+                    PlanilhaComando.Cells(LinhaPEP, ColunaData).Interior.ThemeColor = StatusComponentes()
+                    
+                    session.findById("wnd[0]/tbar[0]/btn[15]").press
+                End If
+                
+            End If
+            
+        Next LinhaPEP
+    Next ColunaData
+End Sub
+
+Function AcessarPEP(PEP)
+    session.findById("wnd[0]/usr/tabsTABSTRIP_SELBLOCK/tabpSEL_00/ssub%_SUBSCREEN_SELBLOCK:PPIO_ENTRY:1200/ctxtS_PROJN-LOW").Text = PEP
+    session.findById("wnd[0]/tbar[1]/btn[8]").press
+    
+End Function
+
+
